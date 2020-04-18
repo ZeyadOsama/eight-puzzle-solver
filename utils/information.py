@@ -1,7 +1,7 @@
 from core.algorithms import Solution
 
 
-class Information(object):
+class Information:
     def __init__(self, solution: Solution, running_time, ram_usage):
         self.solution = solution
         self.running_time = running_time

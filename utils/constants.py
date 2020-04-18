@@ -1,6 +1,8 @@
 STATE_TITLE = '\n' + ('*' * 10) + ' Current State ' + ('*' * 10)
 RESULT = '\n' + ('*' * 10) + ' Result ' + ('*' * 10) + '\n'
 
+GOAL_STATE = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+
 
 class Heuristics:
     MAN = 'manhattan'

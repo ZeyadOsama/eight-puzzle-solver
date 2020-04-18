@@ -1,21 +1,13 @@
 import heapq
-from utils import constants as c
+
+import utils.constants as c
+from core.heuristics import init_heuristic
 
 
 class PriorityQueue:
     def __init__(self, order=c.Order.MIN, heuristic=lambda x: x):
         self.__heap: heapq = []
-        self.__heuristic = self.__init_heuristic(order, heuristic)
-
-    def __init_heuristic(self, order, heuristic):
-        # item with min f(x) will be popped first
-        if order == c.Order.MIN:
-            return heuristic
-        # item with max f(x) will be popped first
-        elif order == c.Order.MAX:
-            return lambda x: -heuristic(x)
-        else:
-            raise ValueError(f'Order must be either {c.Order.MIN} or {c.Order.MAX}.')
+        self.__heuristic = init_heuristic(order, heuristic)
 
     def append(self, item):
         """
