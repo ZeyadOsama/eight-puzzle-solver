@@ -1,13 +1,13 @@
-from core.heuristics import *
-from core.algorithms import bfs, dfs, a_star
-from utils.information import Information
-import utils.constants as c
-import time
 import resource
-import math
+import time
+
+import utils.constants as c
+from core.algorithms import solve
+from core.heuristics import *
+from utils.information import Information
 
 
-class PuzzleState(object):
+class PuzzleState:
     def __init__(self, config, n, goal, cost_function, parent=None, move='Initial', cost=0):
         if n * n != len(config) or n < 2:
             raise AttributeError(f'Length of config entered is not correct or less than required!')
@@ -27,7 +27,8 @@ class PuzzleState(object):
                 self.blank_col = i % self.n
                 break
 
-    def display(self):
+    def summary(self):
+        print(c.STATE_TITLE)
         for i in range(self.n):
             line = []
             offset = i * self.n
@@ -136,39 +137,26 @@ class PuzzleState(object):
 
 
 class PuzzleSolver(object):
-    def __init__(self, initial_state, goal, algorithm=c.Algorithms.BFS, order=c.Order.MIN, heuristic=None):
-        self.initial_state = initial_state
-
-        # Assign the search algorithm that will be used in the solver.
-        if algorithm == c.Algorithms.BFS:
-            self.search_alg = bfs
-        elif algorithm == c.Algorithms.DFS:
-            self.search_alg = dfs
-        elif algorithm == c.Algorithms.A_STAR:
-            self.search_alg = a_star
-        else:
-            raise NotImplementedError('No such algorithm is supported.')
-
+    def __init__(self, algorithm, init_state, goal_state=c.GOAL_STATE, order=c.Order.MIN,
+                 heuristic: c.Heuristics = None):
+        self.init_state = init_state
+        self.algorithm = algorithm
         self.order = order
 
-        # Assign the heuristic algorithm that will be used in the solver.
-        if heuristic is None and algorithm == c.Algorithms.A_STAR:
-            raise AttributeError(f'Required Attribute `heuristic` in case of using A* Search.')
+        if algorithm == c.Algorithms.A_STAR and heuristic is None:
+            raise AttributeError(f'[ERROR] Required attribute \'heuristic\' in case of using A* Search.')
         elif heuristic == c.Heuristics.MAN:
-            self.dist_metric = manhattan
+            self.heuristic = heuristic
         elif heuristic == c.Heuristics.EUC:
-            self.dist_metric = euclidean
-        elif heuristic is None and algorithm != c.Algorithms.A_STAR:
-            pass
-        else:
-            raise NotImplementedError(c.error('No such Heuristic is supported.'))
+            self.heuristic = euclidean
 
         # Create a Puzzle State Object with the inputs for Solver.
-        initial_state = tuple(map(int, initial_state))
-        size = int(math.sqrt(len(initial_state)))
-        self.puzzle_state = PuzzleState(initial_state, size, goal, self.calculate_total_cost)
+        init_state = tuple(map(int, init_state))
+        size = int(math.sqrt(len(init_state)))
 
-        # Start off by checking the solvability of the state and raise error in case of false.
+        self.puzzle_state = PuzzleState(init_state, size, goal_state, self.calculate_total_cost)
+
+        # Start off by checking if state is solvable.
         if not self.puzzle_state.is_solvable():
             raise Exception(f'The initial state entered is not solvable.')
 
@@ -181,19 +169,16 @@ class PuzzleSolver(object):
             current_point = Point(x=i // state.n, y=i % state.n)
             goal_idx = state.goal.index(item)
             goal_point = Point(x=goal_idx // state.n, y=goal_idx % state.n)
-            sum_heuristic += self.dist_metric(current_point, goal_point)
+            sum_heuristic += self.heuristic(current_point, goal_point)
         return sum_heuristic + state.cost
 
     def solve(self) -> Information:
-        start_time = time.time()
         mem_init = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        start_time = time.time()
 
-        if self.search_alg == a_star:
-            solution = a_star(self.puzzle_state, self.order, self.calculate_total_cost)
-        else:
-            solution = self.search_alg(self.puzzle_state)
+        solution = solve(self.puzzle_state, self.algorithm, self.order, self.calculate_total_cost)
 
         running_time = time.time() - start_time
         mem_final = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-        ram_usage = (mem_final - mem_init) / 1024
-        return Information(solution, running_time, ram_usage)
+
+        return Information(solution, running_time, (mem_final - mem_init) / 1024)
