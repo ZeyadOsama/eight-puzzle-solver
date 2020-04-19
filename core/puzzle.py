@@ -146,7 +146,7 @@ class PuzzleSolver(object):
         if algorithm == c.Algorithms.A_STAR and heuristic is None:
             raise AttributeError(f'[ERROR] Required attribute \'heuristic\' in case of using A* Search.')
         elif heuristic == c.Heuristics.MAN:
-            self.heuristic = heuristic
+            self.heuristic = manhattan
         elif heuristic == c.Heuristics.EUC:
             self.heuristic = euclidean
 
