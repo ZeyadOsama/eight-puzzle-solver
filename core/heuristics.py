@@ -1,16 +1,7 @@
 import math
 
+from core.common import Point
 from utils.constants import Order
-
-
-class Point:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-    def display(self):
-        print(f'x: {self.x}')
-        print(f'y: {self.y}')
 
 
 def manhattan(start_point: Point, end_point: Point) -> float:
