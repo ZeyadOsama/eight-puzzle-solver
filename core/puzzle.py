@@ -36,33 +36,39 @@ class PuzzleState:
                 line.append(self.config[offset + j])
             print(line)
 
-    def move_left(self):
-        if self.blank_col == 0:
-            return None
-        else:
-            blank_index = self.blank_row * self.n + self.blank_col
-            target = blank_index - 1
-            new_config = list(self.config)
-            new_config[blank_index], new_config[target] = new_config[target], new_config[blank_index]
-            return PuzzleState(tuple(new_config), self.n, self.goal, self.cost_function,
-                               parent=self,
-                               move=c.Move.LEFT,
-                               cost=self.cost + 1)
+    def expand(self, RLDU=True):
+        if len(self.children) == 0:
+            # RLDU
+            if RLDU:
+                right_child = self.__move_right()
+                if right_child is not None:
+                    self.children.append(right_child)
+                left_child = self.__move_left()
+                if left_child is not None:
+                    self.children.append(left_child)
+                down_child = self.__move_down()
+                if down_child is not None:
+                    self.children.append(down_child)
+                up_child = self.__move_up()
+                if up_child is not None:
+                    self.children.append(up_child)
+            # UDLR
+            else:
+                up_child = self.__move_up()
+                if up_child is not None:
+                    self.children.append(up_child)
+                down_child = self.__move_down()
+                if down_child is not None:
+                    self.children.append(down_child)
+                left_child = self.__move_left()
+                if left_child is not None:
+                    self.children.append(left_child)
+                right_child = self.__move_right()
+                if right_child is not None:
+                    self.children.append(right_child)
+        return self.children
 
-    def move_right(self):
-        if self.blank_col == self.n - 1:
-            return None
-        else:
-            blank_index = self.blank_row * self.n + self.blank_col
-            target = blank_index + 1
-            new_config = list(self.config)
-            new_config[blank_index], new_config[target] = new_config[target], new_config[blank_index]
-            return PuzzleState(tuple(new_config), self.n, self.goal, self.cost_function,
-                               parent=self,
-                               move=c.Move.RIGHT,
-                               cost=self.cost + 1)
-
-    def move_up(self):
+    def __move_up(self):
         if self.blank_row == 0:
             return None
         else:
@@ -75,7 +81,7 @@ class PuzzleState:
                                move=c.Move.RIGHT,
                                cost=self.cost + 1)
 
-    def move_down(self):
+    def __move_down(self):
         if self.blank_row == self.n - 1:
             return None
         else:
@@ -88,35 +94,31 @@ class PuzzleState:
                                move=c.Move.DOWN,
                                cost=self.cost + 1)
 
-    def expand(self, RLDU=True):
-        if len(self.children) == 0:
-            if RLDU:  # RLDU
-                right_child = self.move_right()
-                if right_child is not None:
-                    self.children.append(right_child)
-                left_child = self.move_left()
-                if left_child is not None:
-                    self.children.append(left_child)
-                down_child = self.move_down()
-                if down_child is not None:
-                    self.children.append(down_child)
-                up_child = self.move_up()
-                if up_child is not None:
-                    self.children.append(up_child)
-            else:  # UDLR
-                up_child = self.move_up()
-                if up_child is not None:
-                    self.children.append(up_child)
-                down_child = self.move_down()
-                if down_child is not None:
-                    self.children.append(down_child)
-                left_child = self.move_left()
-                if left_child is not None:
-                    self.children.append(left_child)
-                right_child = self.move_right()
-                if right_child is not None:
-                    self.children.append(right_child)
-        return self.children
+    def __move_right(self):
+        if self.blank_col == self.n - 1:
+            return None
+        else:
+            blank_index = self.blank_row * self.n + self.blank_col
+            target = blank_index + 1
+            new_config = list(self.config)
+            new_config[blank_index], new_config[target] = new_config[target], new_config[blank_index]
+            return PuzzleState(tuple(new_config), self.n, self.goal, self.cost_function,
+                               parent=self,
+                               move=c.Move.RIGHT,
+                               cost=self.cost + 1)
+
+    def __move_left(self):
+        if self.blank_col == 0:
+            return None
+        else:
+            blank_index = self.blank_row * self.n + self.blank_col
+            target = blank_index - 1
+            new_config = list(self.config)
+            new_config[blank_index], new_config[target] = new_config[target], new_config[blank_index]
+            return PuzzleState(tuple(new_config), self.n, self.goal, self.cost_function,
+                               parent=self,
+                               move=c.Move.LEFT,
+                               cost=self.cost + 1)
 
     def is_solvable(self):
         inversion = 0
@@ -136,15 +138,16 @@ class PuzzleState:
         return self.cost_function(self) <= self.cost_function(other)
 
 
-class PuzzleSolver(object):
+class PuzzleSolver:
     def __init__(self, algorithm, init_state, goal_state=c.GOAL_STATE, order=c.Order.MIN,
                  heuristic: c.Heuristics = None):
         self.init_state = init_state
         self.algorithm = algorithm
         self.order = order
 
+        # Create heuristic in A* case.
         if algorithm == c.Algorithms.A_STAR and heuristic is None:
-            raise AttributeError(f'[ERROR] Required attribute \'heuristic\' in case of using A* Search.')
+            raise AttributeError(f'Required attribute \'heuristic\' in case of using A* Search.')
         elif heuristic == c.Heuristics.MAN:
             self.heuristic = manhattan
         elif heuristic == c.Heuristics.EUC:
@@ -153,14 +156,24 @@ class PuzzleSolver(object):
         # Create a Puzzle State Object with the inputs for Solver.
         init_state = tuple(map(int, init_state))
         size = int(math.sqrt(len(init_state)))
-
-        self.puzzle_state = PuzzleState(init_state, size, goal_state, self.calculate_total_cost)
+        self.puzzle_state = PuzzleState(init_state, size, goal_state, self.__calculate_total_cost)
 
         # Start off by checking if state is solvable.
         if not self.puzzle_state.is_solvable():
             raise Exception(f'The initial state entered is not solvable.')
 
-    def calculate_total_cost(self, state):
+    def solve(self) -> Information:
+        mem_start = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        time_start = time.time()
+
+        solution = solve(self.puzzle_state, self.algorithm, self.order, self.__calculate_total_cost)
+
+        time_end = time.time()
+        mem_end = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+
+        return Information(solution, time_end - time_start, (mem_end - mem_start) / 1024)
+
+    def __calculate_total_cost(self, state):
         """
         Calculate the total estimated cost of a state.
         """
@@ -171,14 +184,3 @@ class PuzzleSolver(object):
             goal_point = Point(x=goal_idx // state.n, y=goal_idx % state.n)
             sum_heuristic += self.heuristic(current_point, goal_point)
         return sum_heuristic + state.cost
-
-    def solve(self) -> Information:
-        mem_init = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-        start_time = time.time()
-
-        solution = solve(self.puzzle_state, self.algorithm, self.order, self.calculate_total_cost)
-
-        running_time = time.time() - start_time
-        mem_final = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-
-        return Information(solution, running_time, (mem_final - mem_init) / 1024)
