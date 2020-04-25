@@ -22,8 +22,7 @@ class PriorityQueue:
         """
         if self.__heap:
             return heapq.heappop(self.__heap)[1]
-        else:
-            raise Exception('Trying to pop from empty PriorityQueue.')
+        raise Exception('Trying to pop from empty PriorityQueue.')
 
     def empty(self) -> bool:
         return self.__len__() == 0
