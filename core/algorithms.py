@@ -74,7 +74,7 @@ def a_star(init, order: Order = Order.MIN, heuristic=Heuristics.EUC):
     nodes_expanded = 0
     max_search_depth = 0
 
-    while frontier:
+    while not frontier.empty():
         state = frontier.pop()
         state.summary()
 

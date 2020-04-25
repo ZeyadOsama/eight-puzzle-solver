@@ -25,6 +25,9 @@ class PriorityQueue:
         else:
             raise Exception('Trying to pop from empty PriorityQueue.')
 
+    def empty(self) -> bool:
+        return self.__len__() == 0
+
     def __len__(self):
         """
         Return current capacity of PriorityQueue.
