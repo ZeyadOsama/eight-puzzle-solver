@@ -21,10 +21,10 @@ class Order:
 
 
 class Move:
-    RIGHT = 'right'
-    LEFT = 'left'
-    UP = 'up'
-    DOWN = 'down'
+    RIGHT = 'Right'
+    LEFT = 'Left'
+    UP = 'Up'
+    DOWN = 'Down'
 
 
 class Terminal(str):

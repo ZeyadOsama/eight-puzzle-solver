@@ -8,7 +8,7 @@ class Solution:
         self.max_search_depth = max_search_depth
 
 
-def bfs(init):
+def bfs(init, verbose: bool = False):
     import queue
 
     frontier = queue.Queue()
@@ -20,7 +20,9 @@ def bfs(init):
 
     while not frontier.empty():
         state = frontier.get()
-        state.summary()
+
+        if verbose:
+            state.summary()
 
         explored.add(state.config)
         if state.is_goal():
@@ -36,7 +38,7 @@ def bfs(init):
     return None
 
 
-def dfs(init):
+def dfs(init, verbose: bool = False):
     import queue
 
     frontier = queue.LifoQueue()
@@ -48,7 +50,9 @@ def dfs(init):
 
     while not frontier.empty():
         state = frontier.get()
-        state.summary()
+
+        if verbose:
+            state.summary()
 
         explored.add(state.config)
         if state.is_goal():
@@ -64,7 +68,7 @@ def dfs(init):
     return None
 
 
-def a_star(init, order: Order = Order.MIN, heuristic=Heuristics.EUC):
+def a_star(init, order: Order = Order.MIN, heuristic=Heuristics.EUC, verbose: bool = False):
     from core.priority_queue import PriorityQueue
 
     frontier = PriorityQueue(order, heuristic)
@@ -76,7 +80,9 @@ def a_star(init, order: Order = Order.MIN, heuristic=Heuristics.EUC):
 
     while not frontier.empty():
         state = frontier.pop()
-        state.summary()
+
+        if verbose:
+            state.summary()
 
         explored.add(state)
         if state.is_goal():
@@ -96,11 +102,11 @@ def a_star(init, order: Order = Order.MIN, heuristic=Heuristics.EUC):
     return None
 
 
-def solve(init, algorithm: Algorithms, order: Order = None, heuristic=None):
+def solve(init, algorithm: Algorithms, order: Order = None, heuristic=None, verbose: bool = False):
     if algorithm == Algorithms.BFS:
-        return bfs(init)
+        return bfs(init, verbose)
     if algorithm == Algorithms.DFS:
-        return dfs(init)
+        return dfs(init, verbose)
     if algorithm == Algorithms.A_STAR:
-        return a_star(init, order, heuristic)
+        return a_star(init, order, heuristic, verbose)
     raise NotImplementedError('[ERROR] No such algorithm is supported.')

@@ -137,10 +137,11 @@ class PuzzleState:
 
 class PuzzleSolver:
     def __init__(self, algorithm, init_state, goal_state=c.GOAL_STATE, order=c.Order.MIN,
-                 heuristic: c.Heuristics = None):
+                 heuristic: c.Heuristics = None, verbose: bool = False):
         self.init_state = init_state
         self.algorithm = algorithm
         self.order = order
+        self.verbose = verbose
 
         # Create heuristic in A* case.
         if algorithm == c.Algorithms.A_STAR and heuristic is None:
@@ -163,7 +164,7 @@ class PuzzleSolver:
         mem_start = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
         time_start = time.time()
 
-        solution = solve(self.puzzle_state, self.algorithm, self.order, self.__calculate_total_cost)
+        solution = solve(self.puzzle_state, self.algorithm, self.order, self.__calculate_total_cost, self.verbose)
 
         time_end = time.time()
         mem_end = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss

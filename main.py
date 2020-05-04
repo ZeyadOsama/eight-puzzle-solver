@@ -62,7 +62,7 @@ def main():
     init_state, algorithm, verbose = get_args()
     heuristic = get_heuristic(algorithm)
 
-    solver = PuzzleSolver(algorithm, init_state=init_state, goal_state=c.GOAL_STATE, heuristic=heuristic)
+    solver = PuzzleSolver(algorithm, init_state=init_state, goal_state=c.GOAL_STATE, heuristic=heuristic, verbose=False)
     solution = solver.solve()
     solution.summary(verbose=True)
 
