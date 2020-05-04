@@ -18,13 +18,11 @@ For A* algorithm, heuristics should be provided.
 #### Manhattan Distance
 ```
 abs(start_point.x - end_point.x) + abs(start_point.y - end_point.y)
-
 ```
 
 #### Euclidean Distance
 ```
 math.sqrt(math.pow(start_point.x - end_point.x, 2) + math.pow(start_point.y - end_point.y, 2))
-
 ```
 
 ## Puzzle State
